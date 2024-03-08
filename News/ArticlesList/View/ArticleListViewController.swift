@@ -37,6 +37,8 @@ class ArticleListViewController: UIViewController {
         indicator.translatesAutoresizingMaskIntoConstraints = false
         return indicator
     }()
+    
+    private let refreshControl = UIRefreshControl()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,8 +56,10 @@ class ArticleListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         view.addSubview(articlesTableView)
         view.addSubview(activityIndicator)
+        refreshControl.addTarget(self, action: #selector(refreshNews(_:)), for: .valueChanged)
         articlesTableView.delegate = self
         articlesTableView.dataSource = self
+        articlesTableView.refreshControl = refreshControl
         NSLayoutConstraint.activate([
             //ARTICLES TABLEVIEW
             articlesTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -67,6 +71,10 @@ class ArticleListViewController: UIViewController {
             activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+    
+    @objc private func refreshNews(_ sender: UIRefreshControl) {
+        presenter?.viewDidLoad()
     }
     
 }
@@ -82,6 +90,9 @@ extension ArticleListViewController: ArticlesListViewProtocol{
     func hideLoading() {
         DispatchQueue.main.async{
             self.activityIndicator.stopAnimating()
+            if self.refreshControl.isRefreshing{
+                self.refreshControl.endRefreshing()
+            }
         }
     }
     
